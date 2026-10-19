@@ -1,0 +1,1026 @@
+{
+  "info": {
+    "name": "Ali Naji - Threat Intelligence",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run requests in order using AliNaji.environment.local.json. Each run creates its own records. Tokens come from the team's identity service; local CLI tokens only test authorization."
+  },
+  "variable": [
+    {
+      "key": "threat_id",
+      "value": ""
+    },
+    {
+      "key": "domain_id",
+      "value": ""
+    },
+    {
+      "key": "run_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Ali Naji - Create attack indicator",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Create attack indicator (Ali Naji). Expected HTTP 201. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threat_type\": \"Other Indicators\",\n  \"threat_value\": \"postman-{{run_id}}\",\n  \"description\": \"Lab attack indicator; High severity selected for investigation priority\",\n  \"severity\": \"High\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('threat_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject duplicate indicator",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject duplicate indicator (Ali Naji). Expected HTTP 409. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threat_type\": \"Other Indicators\",\n  \"threat_value\": \"postman-{{run_id}}\",\n  \"description\": \"Lab attack indicator; High severity selected for investigation priority\",\n  \"severity\": \"High\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Create domain indicator",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Create domain indicator (Ali Naji). Expected HTTP 201. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threat_type\": \"Domain\",\n  \"threat_value\": \"lab-{{run_id}}.example.com\",\n  \"description\": \"Lab attack indicator; High severity selected for investigation priority\",\n  \"severity\": \"Critical\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('domain_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Retrieve all threats",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Retrieve all threats (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Records array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Retrieve specific threat",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Retrieve specific threat (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search by type",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/search?threat_type=Domain",
+        "description": "Search by type (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search by indicator",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/search?threat_value=postman-{{run_id}}",
+        "description": "Search by indicator (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search by severity and source",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/search?severity=High&source=Postman%20lab%20run",
+        "description": "Search by severity and source (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search with no matches",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/search?source=absent-{{run_id}}",
+        "description": "Search with no matches (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Empty results', () => pm.expect(pm.response.json()).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Analyst reads threat",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Analyst reads threat (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Auditor reads threat",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Auditor reads threat (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Auditor search forbidden by service matrix",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/search",
+        "description": "Auditor search forbidden by service matrix (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Update threat severity",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Update threat severity (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Confirmed lab indicator after review\",\n  \"severity\": \"Critical\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Retrieve updated threat",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Retrieve updated threat (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Severity changed', () => pm.expect(pm.response.json().severity).to.eql('Critical'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject analyst update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Reject analyst update (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"severity\": \"Low\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject analyst deletion",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Reject analyst deletion (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject regular user read",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject regular user read (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject unauthenticated read",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject unauthenticated read (Ali Naji). Expected HTTP 401. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid IP",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject invalid IP (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threat_type\": \"IP Address\",\n  \"threat_value\": \"999.1.1.1\",\n  \"description\": \"Lab attack indicator; High severity selected for investigation priority\",\n  \"severity\": \"High\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid domain",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject invalid domain (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threat_type\": \"Domain\",\n  \"threat_value\": \"https://example.com\",\n  \"description\": \"Lab attack indicator; High severity selected for investigation priority\",\n  \"severity\": \"High\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid hash",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject invalid hash (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threat_type\": \"File Hash\",\n  \"threat_value\": \"not-a-hash\",\n  \"description\": \"Lab attack indicator; High severity selected for investigation priority\",\n  \"severity\": \"High\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid severity",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject invalid severity (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"threat_type\": \"Other Indicators\",\n  \"threat_value\": \"postman-{{run_id}}\",\n  \"description\": \"Lab attack indicator; High severity selected for investigation priority\",\n  \"severity\": \"Severe\",\n  \"source\": \"Postman lab run\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject missing fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats",
+        "description": "Reject missing fields (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject empty update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Reject empty update (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Missing threat",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/2147483647",
+        "description": "Missing threat (Ali Naji). Expected HTTP 404. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Delete threat",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Delete threat (Ali Naji). Expected HTTP 204. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Verify deleted threat",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{threat_id}}",
+        "description": "Verify deleted threat (Ali Naji). Expected HTTP 404. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Delete domain indicator",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{threats_base}}/AliNaji/threats/{{domain_id}}",
+        "description": "Delete domain indicator (Ali Naji). Expected HTTP 204. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.info.requestName === 'Ali Naji - Create attack indicator') pm.collectionVariables.set('run_id', pm.variables.replaceIn('{{$guid}}'));"
+        ]
+      }
+    }
+  ]
+}
