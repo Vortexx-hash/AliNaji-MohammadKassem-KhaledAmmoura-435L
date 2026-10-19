@@ -37,6 +37,7 @@ def test_crud_search_and_real_database(threat_client, auth, threat, settings):
     ("Domain", "Example.COM.", "example.com"),
     ("IP Address", "2001:0db8:0:0:0:0:0:1", "2001:db8::1"),
     ("File Hash", "AB" * 32, "ab" * 32),
+    ("File Hash", "CD" * 64, "cd" * 64),
     ("Malware Signature", "LAB-SIGNATURE", "LAB-SIGNATURE"),
     ("Other Indicators", "test-indicator", "test-indicator"),
 ])
@@ -53,6 +54,7 @@ def test_canonical_duplicate_indicators(threat_client, auth, threat, kind, value
     {"threat_type": "Domain", "threat_value": "https://example.com/path"},
     {"threat_type": "Domain", "threat_value": "192.0.2.1"},
     {"threat_type": "Domain", "threat_value": "-bad.example"},
+    {"threat_type": "Domain", "threat_value": "bad.example.."},
     {"threat_type": "File Hash", "threat_value": "g" * 64},
     {"threat_type": "File Hash", "threat_value": "a" * 33},
     {"description": " "}, {"severity": "Severe"}, {"source": None}, {"unexpected": True},

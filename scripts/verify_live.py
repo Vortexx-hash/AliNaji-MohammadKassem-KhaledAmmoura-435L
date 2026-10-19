@@ -22,9 +22,9 @@ def main():
         for port in [8004, 8007, 8006]:
             response = client.get(f"http://127.0.0.1:{port}/AliNaji/health")
             assert response.status_code == 200
-        for kind, port, table, date_field in [
-            ("threats", 8004, "threats", "date_added"),
-            ("vulnerabilities", 8007, "vulnerabilities", "creation_date"),
+        for kind, table in [
+            ("threats", "threats"),
+            ("vulnerabilities", "vulnerabilities"),
         ]:
             url = f"http://127.0.0.1:8006/AliNaji/reports/{kind}"
             response = client.get(url)
@@ -42,6 +42,21 @@ def main():
             executions.append({"method": "GET", "url": url, "status": response.status_code,
                                "response": report, "database_row_count": len(records), "matches_database": True})
             print(f"{kind}: report total {len(records)} matches actual SQLite records and severity groups")
+        if not settings.sources.get("users"):
+            url = "http://127.0.0.1:8006/AliNaji/reports/summary"
+            response = client.get(url)
+            assert response.status_code == 503
+            executions.append({"method": "GET", "url": url, "status": 503, "response": response.json(),
+                               "reason": "Users service not configured; no fabricated summary returned"})
+        if not settings.asset_detail_url:
+            url = "http://127.0.0.1:8007/AliNaji/vulnerabilities"
+            body = {"title": "Verification probe", "description": "Must fail without a real asset service",
+                    "cve_identifier": "CVE-2025-12345", "cvss_score": 8.1, "severity": "High",
+                    "affected_asset_id": 1, "discovery_source": "Local verification"}
+            response = client.post(url, json=body)
+            assert response.status_code == 503
+            executions.append({"method": "POST", "url": url, "request": body, "status": 503,
+                               "response": response.json(), "reason": "No unverified asset association accepted"})
     target = Path("evidence/local/live-verification.json")
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps({"executed_at": datetime.now(timezone.utc).isoformat(),

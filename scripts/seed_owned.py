@@ -1,6 +1,5 @@
 """Create sample records through running owned APIs, never through fake teammate services."""
 import argparse
-import json
 import os
 from pathlib import Path
 

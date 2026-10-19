@@ -43,6 +43,13 @@ class VulnerabilityUpdate(UpdateModel):
     cvss_score: Score | None = None
     resolution_date: datetime | None = None
 
+    @field_validator("resolution_date", mode="before")
+    @classmethod
+    def iso_date_required(cls, value):
+        if value is not None and not isinstance(value, (str, datetime)):
+            raise ValueError("Resolution date must be an ISO 8601 timestamp")
+        return value
+
     @field_validator("resolution_date")
     @classmethod
     def timezone_required(cls, value):

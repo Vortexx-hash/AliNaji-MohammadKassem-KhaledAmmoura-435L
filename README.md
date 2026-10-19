@@ -2,6 +2,8 @@
 
 Ali Naji owns Threat Intelligence (Service 4), Vulnerability Management (Service 7), and Security Reports (Service 6). Work is isolated on `ali-naji/sprint1-services`. The six other services remain the responsibility of Mohammad Kassem and Khaled Ammoura. No frontend is required.
 
+Read the [implementation handoff](docs/HANDOFF.md) for completed features, verification results, commits, and the remaining teammate integration/submission tasks.
+
 Python 3.10+ and SQLite run locally without Docker or a database server. Services run in separate processes and communicate through HTTP. All routes, including documentation, begin with `/AliNaji` (full name with spaces removed).
 
 ## Setup (Ali Naji)

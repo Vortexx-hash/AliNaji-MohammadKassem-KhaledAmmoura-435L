@@ -26,3 +26,14 @@ class Severity(str, Enum):
     MEDIUM = "Medium"
     HIGH = "High"
     CRITICAL = "Critical"
+
+
+class ErrorDetail(BaseModel):
+    field: str
+    message: str
+
+
+class ErrorResponse(BaseModel):
+    status: str = "error"
+    message: str
+    errors: list[ErrorDetail] | None = None

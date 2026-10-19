@@ -17,6 +17,7 @@ def test_wrong_signature_issuer_audience_or_missing_claims(threat_client, settin
     cases = [(settings.jwt_secret + "wrong", valid),
              (settings.jwt_secret, {**valid, "iss": "wrong"}),
              (settings.jwt_secret, {**valid, "aud": "wrong"}),
+             (settings.jwt_secret, {**valid, "exp": str(valid["exp"])}),
              (settings.jwt_secret, {**valid, "role": "Admin"})]
     for claim in ["exp", "iat", "sub", "role", "account_status"]:
         cases.append((settings.jwt_secret, {k: v for k, v in valid.items() if k != claim}))

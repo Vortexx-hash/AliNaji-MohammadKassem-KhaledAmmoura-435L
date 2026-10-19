@@ -19,7 +19,7 @@ class UpstreamClient:
                 raise HTTPException(404, "Affected asset not found")
             response.raise_for_status()
             return response.json()
-        except (httpx.HTTPError, ValueError):
+        except (httpx.HTTPError, httpx.InvalidURL, ValueError):
             raise HTTPException(503, f"{source} service unavailable or returned invalid JSON")
 
     def asset(self, url_template, asset_id, token):

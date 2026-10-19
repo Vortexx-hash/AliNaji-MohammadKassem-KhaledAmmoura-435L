@@ -1,7 +1,6 @@
 """Local test tokens only. This is not the Users/Login service."""
 import argparse
 import json
-import os
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 

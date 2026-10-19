@@ -44,7 +44,7 @@ class AuditOutbox:
                         "Idempotency-Key": event_id,
                     })
                     response.raise_for_status()
-                except httpx.HTTPError:
+                except (httpx.HTTPError, httpx.InvalidURL):
                     logging.getLogger(__name__).warning("Audit delivery deferred for %s", event_id)
                     break
                 with self.db.connect() as conn:

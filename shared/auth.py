@@ -35,6 +35,8 @@ def require(*roles: Role):
                                 options={"require": ["sub", "exp", "iat", "iss", "aud", "role", "account_status"]})
             if not isinstance(claims["sub"], str) or not claims["sub"].strip():
                 raise ValueError("Invalid subject")
+            if any(type(claims[name]) not in (int, float) for name in ("iat", "exp")):
+                raise ValueError("Token timestamps must be numeric")
             if claims["account_status"] != "Active":
                 raise ValueError("Account is not active")
             principal = Principal(claims["sub"], Role(claims["role"]), credentials.credentials)
@@ -57,7 +59,7 @@ def require(*roles: Role):
                         or identity["role"] != principal.role.value):
                     audit.denied(principal.user_id, "AUTHENTICATION_FAILED", "Account status or role changed")
                     raise HTTPException(401, "Account status or role changed; log in again")
-            except (httpx.HTTPError, ValueError, KeyError, TypeError):
+            except (httpx.HTTPError, httpx.InvalidURL, ValueError, KeyError, TypeError):
                 raise HTTPException(503, "Identity service unavailable or returned invalid data")
         if principal.role not in roles:
             audit.denied(principal.user_id, "PERMISSION_DENIED", f"{request.method} {request.url.path}")

@@ -29,7 +29,7 @@ class ThreatCreate(StrictModel):
         if self.threat_type == ThreatType.IP:
             self.threat_value = str(ipaddress.ip_address(value))
         elif self.threat_type == ThreatType.DOMAIN:
-            value = value.rstrip(".").lower()
+            value = value.removesuffix(".").lower()
             try:
                 ipaddress.ip_address(value)
             except ValueError:
@@ -42,8 +42,8 @@ class ThreatCreate(StrictModel):
                 raise ValueError("Invalid domain; use a hostname without scheme, port or path")
             self.threat_value = value
         elif self.threat_type == ThreatType.HASH:
-            if len(value) not in (32, 40, 64) or not re.fullmatch(r"[0-9a-fA-F]+", value):
-                raise ValueError("File Hash must be a hexadecimal MD5, SHA-1 or SHA-256 value")
+            if len(value) not in (32, 40, 64, 128) or not re.fullmatch(r"[0-9a-fA-F]+", value):
+                raise ValueError("File Hash must be a hexadecimal MD5, SHA-1, SHA-256 or SHA-512 value")
             self.threat_value = value.lower()
         if any(ord(c) < 32 or ord(c) == 127 for c in self.threat_value):
             raise ValueError("Threat value cannot contain control characters")

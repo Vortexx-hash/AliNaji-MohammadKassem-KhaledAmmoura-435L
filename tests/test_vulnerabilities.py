@@ -98,7 +98,7 @@ def test_resolution_dates_and_update_errors(vulnerability_client, auth, vulnerab
     path = f"{BASE}/{item['id']}"
     now = datetime.now(timezone.utc).isoformat()
     for update in [{}, {"severity": None}, {"affected_asset_id": 99}, {"resolution_date": "2025-01-01T00:00:00"},
-                   {"resolution_date": now}, {"status": "Unknown"}]:
+                   {"resolution_date": now}, {"resolution_date": datetime.now(timezone.utc).timestamp()}, {"status": "Unknown"}]:
         assert c.put(path, json=update, headers=auth()).status_code == 422
     for status in ["Under Investigation", "In Progress"]:
         assert c.put(path, json={"status": status}, headers=auth()).status_code == 200

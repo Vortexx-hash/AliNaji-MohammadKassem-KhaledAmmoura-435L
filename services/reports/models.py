@@ -9,7 +9,7 @@ from shared.models import Severity
 
 
 class SourceRecord(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", str_strip_whitespace=True)
     id: Annotated[int, Field(gt=0, strict=True)] | Annotated[str, Field(min_length=1, strict=True)]
 
 
