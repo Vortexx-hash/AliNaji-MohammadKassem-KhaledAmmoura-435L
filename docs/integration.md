@@ -1,6 +1,6 @@
 # Team integration contracts (Ali Naji)
 
-Ali Naji implements only Services 4, 6, and 7. No Users, Assets, Incidents, Logs, Notifications, or Playbooks APIs/tables are implemented here. Tests may replace dependency HTTP transports; those fixtures are not submission evidence.
+Ali Naji implements only Services 4, 6, and 7. No production Users, Assets, Incidents, Logs, Notifications, or Playbooks service is implemented here. Tests may replace dependency HTTP transports. The optional [standalone demo](demo.md) also serves explicitly synthetic read-only dependency data and a demo audit receiver, isolated from normal mode. These fixtures are not proof of teammate implementation/integration.
 
 ## Identity and authorization (Ali Naji)
 

@@ -2,6 +2,10 @@
 
 Ali Naji's three assigned services are implemented on `ali-naji/sprint1-services`: Threat Intelligence, Vulnerability Management, and Security Reports. They expose 18 required business endpoints, all named with `/AliNaji`, plus named health/documentation endpoints. The other six services have no implementations or business tables in this branch. Main has not been merged or pushed.
 
+**Standalone testing update:** [demo mode](demo.md) now supplies explicitly synthetic external dependency fixtures on separate ports. Your actual APIs can create vulnerabilities, complete their lifecycle, deliver demo audit events, and generate all six reports without waiting for teammates. Use the generated DEMO Postman environment. The original integration requirements below still apply to normal mode and real teammate integration.
+
+The demo update passes **102 automated tests** and **all three complete collections: 86 HTTP requests, 104 assertions, zero failures**. The earlier normal-mode verification below remains recorded separately so fixture-based testing is not confused with real teammate integration.
+
 ## Implemented scope (Ali Naji)
 
 | Service | Implementation | Database | Postman |

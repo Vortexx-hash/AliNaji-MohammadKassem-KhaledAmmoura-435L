@@ -7,3 +7,5 @@
 - [PyJWT usage documentation](https://pyjwt.readthedocs.io/en/stable/usage.html) for signature/issuer/audience/expiry and required-claim checks.
 
 AI assistance: OpenAI Codex read the assignment, drafted and implemented these three services and supporting SQL, tests, Postman collections, and documentation, and ran local verification under the user's direction. This is not a claim that the code was written without assistance. The assignment explicitly prohibits copying complete AI-generated solutions and requires disclosure of where/why AI was used; the team must resolve that submission constraint with the instructor and be able to explain and demonstrate its own work. No AI-generated screenshots or invented service execution outputs are used.
+
+At the user's explicit request for data to test before teammates finish, Codex also added the separate demo fixture dataset, launcher, and tests. All synthetic upstream data are labelled; owned API execution and database writes remain actual local execution. Demo fixtures are not presented as real teammate services or actual login evidence.

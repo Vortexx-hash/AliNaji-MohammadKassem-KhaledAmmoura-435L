@@ -4,6 +4,8 @@ Ali Naji owns Threat Intelligence (Service 4), Vulnerability Management (Service
 
 Read the [implementation handoff](docs/HANDOFF.md) for completed features, verification results, commits, and the remaining teammate integration/submission tasks.
 
+**Test everything before teammates finish:** run `.\.venv\Scripts\python.exe -m scripts.demo start` and select `postman/AliNaji.demo.environment.local.json` in Postman. This runs your actual APIs on separate ports with explicitly synthetic dependencies and separate databases. Vulnerability creation and all six reports work in this demo. See the [demo instructions](docs/demo.md).
+
 Python 3.10+ and SQLite run locally without Docker or a database server. Services run in separate processes and communicate through HTTP. All routes, including documentation, begin with `/AliNaji` (full name with spaces removed).
 
 ## Setup (Ali Naji)

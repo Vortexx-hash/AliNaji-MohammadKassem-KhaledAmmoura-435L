@@ -1,0 +1,26 @@
+{
+  "description": "SYNTHETIC DEMO DATA ONLY. No actual user logins, real assets or teammate service implementations are represented.",
+  "users": [
+    {"id": "local-admin_token", "full_name": "Demo Administrator", "role": "Security Administrator", "account_status": "Active"},
+    {"id": "local-analyst_token", "full_name": "Demo Analyst", "role": "Security Analyst", "account_status": "Active"},
+    {"id": "local-auditor_token", "full_name": "Demo Auditor", "role": "Auditor", "account_status": "Active"},
+    {"id": "local-user_token", "full_name": "Demo Employee", "role": "Regular Employee/User", "account_status": "Active"}
+  ],
+  "assets": [
+    {"id": 1, "asset_name": "DEMO Web Server", "asset_type": "Server", "ip_address": "192.0.2.10", "criticality_level": "Critical", "status": "Active"},
+    {"id": 2, "asset_name": "DEMO Workstation", "asset_type": "Workstation", "ip_address": "192.0.2.20", "criticality_level": "Medium", "status": "Active"},
+    {"id": 3, "asset_name": "DEMO Database", "asset_type": "Database", "ip_address": "192.0.2.30", "criticality_level": "High", "status": "Active"}
+  ],
+  "incidents": [
+    {"id": 1, "title": "DEMO suspicious login", "severity": "High", "status": "Open"},
+    {"id": 2, "title": "DEMO malware investigation", "severity": "Critical", "status": "Under Investigation"},
+    {"id": 3, "title": "DEMO isolated host", "severity": "Medium", "status": "Mitigated"},
+    {"id": 4, "title": "DEMO resolved phishing", "severity": "Low", "status": "Resolved"},
+    {"id": 5, "title": "DEMO closed alert", "severity": "Low", "status": "Closed"}
+  ],
+  "activities": [
+    {"id": "fixture-login-success", "user_id": "local-admin_token", "action": "LOGIN_SUCCESS", "description": "SYNTHETIC fixture: successful login example; no actual login occurred", "severity": "Information", "related_service": "Synthetic identity fixture"},
+    {"id": "fixture-login-failed-1", "user_id": null, "action": "LOGIN_FAILED", "description": "SYNTHETIC fixture: incorrect password example; no actual login occurred", "severity": "Warning", "related_service": "Synthetic identity fixture"},
+    {"id": "fixture-login-failed-2", "user_id": null, "action": "LOGIN_FAILED", "description": "SYNTHETIC fixture: unknown account example; no actual login occurred", "severity": "Warning", "related_service": "Synthetic identity fixture"}
+  ]
+}

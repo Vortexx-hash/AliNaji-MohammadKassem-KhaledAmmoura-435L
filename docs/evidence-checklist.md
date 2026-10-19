@@ -2,6 +2,8 @@
 
 The assignment requires real screenshots of Postman requests/responses and database records. This repository provides executable collections and test tools. No screenshots have been fabricated or supplied as if they came from Postman. Automated fixtures prove behavior under controlled inputs; they are not proof that a teammate's unfinished service exists.
 
+For immediate development testing, use [demo mode](demo.md) and select the generated DEMO Postman environment. You can capture actual responses and stored records from your APIs there, but label the synthetic upstream data explicitly. These development captures do not prove real teammate integration or actual user login.
+
 ## Prepare actual Postman captures (Ali Naji)
 
 1. Run `scripts/setup_local.ps1`, then start all three owned services with `scripts/run.ps1` in separate terminals. Import the three collections and the ignored local environment. Select that environment. Tokens expire after 30 minutes; refresh them when needed.
