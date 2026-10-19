@@ -130,9 +130,58 @@ def vulnerabilities():
     write_collection("vulnerabilities", "Vulnerability Management", items, ("vulnerability_id", "critical_id"))
 
 
+def reports():
+    url = "{{reports_base}}/AliNaji/reports"
+    owned = [
+        request("Read threat report source", "GET", "{{threats_base}}/AliNaji/threats", checks=[
+            "pm.collectionVariables.set('expected_threats', JSON.stringify(pm.response.json()));"]),
+        request("Generate threat report", "GET", url + "/threats", checks=[
+            "const r = pm.response.json(); const source = JSON.parse(pm.collectionVariables.get('expected_threats'));",
+            "pm.test('Total matches Threat Intelligence API', () => pm.expect(r.total_threats).to.eql(source.length));",
+            "pm.test('Severity totals reconcile', () => pm.expect(Object.values(r.threats_by_severity).reduce((a,b)=>a+b,0)).to.eql(r.total_threats));",
+            "pm.test('Type totals reconcile', () => pm.expect(Object.values(r.threats_by_type).reduce((a,b)=>a+b,0)).to.eql(r.total_threats));",
+            "pm.test('Recent threats capped at ten', () => pm.expect(r.recent_added_threats.length).to.be.at.most(10));"]),
+        request("Read vulnerability report source", "GET", "{{vulnerabilities_base}}/AliNaji/vulnerabilities", checks=[
+            "pm.collectionVariables.set('expected_vulnerabilities', JSON.stringify(pm.response.json()));"]),
+        request("Generate vulnerability report", "GET", url + "/vulnerabilities", checks=[
+            "const r = pm.response.json(); const source = JSON.parse(pm.collectionVariables.get('expected_vulnerabilities'));",
+            "pm.test('Total matches Vulnerability Management API', () => pm.expect(r.total_vulnerabilities).to.eql(source.length));",
+            "pm.test('Severity totals reconcile', () => pm.expect(Object.values(r.vulnerabilities_by_severity).reduce((a,b)=>a+b,0)).to.eql(r.total_vulnerabilities));",
+            "pm.test('Status totals reconcile', () => pm.expect(Object.values(r.vulnerabilities_by_status).reduce((a,b)=>a+b,0)).to.eql(r.total_vulnerabilities));",
+            "pm.test('Critical count matches source', () => pm.expect(r.critical_vulnerabilities).to.eql(source.filter(v=>v.severity==='Critical').length));"]),
+        request("Auditor generates threat report", "GET", url + "/threats", token="auditor_token"),
+    ]
+    dependent = []
+    for kind, total, grouped in [("incidents", "total_incidents", "incidents_by_severity"),
+                                  ("assets", "total_assets", "assets_by_type")]:
+        dependent.append(request(f"Generate {kind} report", "GET", url + "/" + kind, checks=[
+            f"const r=pm.response.json(); pm.test('Grouped counts reconcile', () => pm.expect(Object.values(r.{grouped}).reduce((a,b)=>a+b,0)).to.eql(r.{total}));"]))
+    dependent.extend([
+        request("Generate security summary report", "GET", url + "/summary", checks=[
+            "const r=pm.response.json(); pm.test('All six sources used', () => pm.expect(r.sources.length).to.eql(6));",
+            "pm.test('Open incident count valid', () => pm.expect(r.open_incidents).to.be.at.most(r.incidents));"]),
+        request("Generate activity report", "GET", url + "/activity", checks=[
+            "const r=pm.response.json(); pm.test('Login counters consistent', () => pm.expect(r.failed_login_attempts).to.be.at.most(r.login_attempts));"]),
+    ])
+    for kind in ["summary", "incidents", "assets", "vulnerabilities", "activity"]:
+        dependent.append(request(f"Auditor generates {kind} report", "GET", url + "/" + kind, token="auditor_token"))
+    security = []
+    for kind in ["summary", "incidents", "assets", "threats", "vulnerabilities", "activity"]:
+        security.extend([
+            request(f"Reject analyst {kind} report", "GET", url + "/" + kind, 403, token="analyst_token"),
+            request(f"Reject employee {kind} report", "GET", url + "/" + kind, 403, token="user_token"),
+        ])
+    security.append(request("Reject unauthenticated report", "GET", url + "/summary", 401, token=None))
+    write_collection("reports", "Security Reports", [
+        {"name": "Available own services", "item": owned},
+        {"name": "Team dependent reports", "item": dependent},
+        {"name": "Access control", "item": security},
+    ], ("expected_threats", "expected_vulnerabilities"))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("service", choices=["threats", "vulnerabilities"])
+    parser.add_argument("service", choices=["threats", "vulnerabilities", "reports"])
     args = parser.parse_args()
     globals()[args.service]()
     environment()

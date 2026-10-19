@@ -1,5 +1,6 @@
 import httpx
 from fastapi import HTTPException
+from pydantic import ValidationError
 
 
 class UpstreamClient:
@@ -30,3 +31,24 @@ class UpstreamClient:
         if not isinstance(data, dict) or type(data.get("id")) is not int or data["id"] != asset_id:
             raise HTTPException(503, "Assets service returned an invalid asset record")
         return data
+
+    def records(self, url, token, source, model):
+        data = self.get_json(url, token, source)
+        if isinstance(data, dict):
+            if (data.get("next") or data.get("has_more") or data.get("pagination")
+                    or data.get("total_pages", 1) != 1):
+                raise HTTPException(503, f"{source} service must return a complete, unpaginated dataset")
+            records = data.get("data")
+            if not isinstance(records, list) or ("total" in data and data["total"] != len(records)):
+                raise HTTPException(503, f"{source} service returned incomplete or invalid records")
+            data = records
+        if not isinstance(data, list):
+            raise HTTPException(503, f"{source} service must return a JSON array or data array")
+        try:
+            records = [model.model_validate(row) for row in data]
+        except (ValidationError, TypeError, ValueError):
+            raise HTTPException(503, f"{source} service returned invalid record fields")
+        ids = [str(row.id) for row in records]
+        if len(ids) != len(set(ids)):
+            raise HTTPException(503, f"{source} service returned duplicate record identifiers")
+        return records

@@ -22,6 +22,7 @@ def create_service(name: str, db_name: str, settings: Settings, service_schema: 
 
     app = FastAPI(title=f"{name} (Ali Naji)", version="1.0.0", lifespan=lifespan,
                   docs_url=f"{PREFIX}/docs", redoc_url=f"{PREFIX}/redoc",
+                  swagger_ui_oauth2_redirect_url=f"{PREFIX}/docs/oauth2-redirect",
                   openapi_url=f"{PREFIX}/openapi.json")
     app.state.settings, app.state.db, app.state.audit = settings, db, audit
     install_handlers(app)

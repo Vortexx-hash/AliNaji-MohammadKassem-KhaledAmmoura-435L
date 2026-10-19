@@ -37,3 +37,33 @@ Use the helper scripts to share the ignored local configuration between terminal
 ```
 
 The service runs on port 8007. Set Postman's `asset_id` to a real asset created by your teammate. Creation verifies that asset over HTTP and saves a local reference with a real foreign key. With no Assets API configured, creation returns 503; other operations remain testable. The test suite uses isolated mock HTTP fixtures for successful asset lookup, not fake production assets. Import `AliNaji.vulnerabilities.postman_collection.json` and run requests in order after configuring the real dependency.
+
+## Security Reports (Ali Naji)
+
+```powershell
+.\scripts\run.ps1 reports
+```
+
+Reports run on port 8006. Start Threat Intelligence and Vulnerability Management first. Threat/vulnerability reports work immediately against those real APIs, including correctly reporting zero vulnerabilities before the Assets dependency is ready. Summary/incident/asset/activity reports additionally need the teammate URLs in `.env.example`. Missing sources return 503, never invented counts. There is no report table because reports derive live data without persisting report snapshots; `reports.db` contains only durable audit transport tables.
+
+Generate sample threat records through your running API:
+
+```powershell
+.\.venv\Scripts\python.exe -m scripts.seed_owned
+# After a real asset exists, optionally seed vulnerabilities too:
+.\.venv\Scripts\python.exe -m scripts.seed_owned --asset-id 7
+.\.venv\Scripts\python.exe -m scripts.inspect_db threats
+```
+
+The optional asset id above is an example: use the id actually created by your teammate. The default sample seeder is repeatable for threats (409 duplicates are accepted); optional vulnerability seeding creates new records on each run.
+
+Import all three Postman collections and `AliNaji.environment.local.json`. Run vulnerability requests after configuring the real asset service. In the Reports collection, `Available own services` and `Access control` folders work with only our three processes; `Team dependent reports` needs the other services. The CRUD collections clean up the records they create. Seed samples separately when capturing database screenshots.
+
+Optional command-line execution of the exact Postman requests:
+
+```powershell
+npx.cmd --yes newman@6.2.1 run postman/AliNaji.threats.postman_collection.json -e postman/AliNaji.environment.local.json
+npx.cmd --yes newman@6.2.1 run postman/AliNaji.reports.postman_collection.json -e postman/AliNaji.environment.local.json --folder "Available own services" --folder "Access control"
+```
+
+To refresh local Postman tokens, run `.\scripts\setup_local.ps1` again. Stop/restart service terminals after changing `.env`; the launcher loads it at startup. The API health and documentation URLs use the same `/AliNaji` prefix in every service.

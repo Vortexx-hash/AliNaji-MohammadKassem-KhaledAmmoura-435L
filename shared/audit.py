@@ -13,8 +13,9 @@ def utcnow() -> str:
 
 
 class AuditOutbox:
-    def __init__(self, db: Database, settings: Settings, service: str):
+    def __init__(self, db: Database, settings: Settings, service: str, transport=None):
         self.db, self.settings, self.service = db, settings, service
+        self.transport = transport
 
     def record(self, conn, user_id, action, description, severity="Information"):
         conn.execute("INSERT INTO audit_outbox VALUES (?,?,?,?,?,?,?)", (
@@ -33,7 +34,7 @@ class AuditOutbox:
             rows = conn.execute("""SELECT o.* FROM audit_outbox o LEFT JOIN audit_delivery d
                 ON o.event_id=d.event_id WHERE d.event_id IS NULL ORDER BY o.timestamp LIMIT 100""").fetchall()
         sent = 0
-        with httpx.Client(timeout=3, follow_redirects=False) as client:
+        with httpx.Client(timeout=3, follow_redirects=False, transport=self.transport) as client:
             for row in rows:
                 event = dict(row)
                 event_id = event.pop("event_id")

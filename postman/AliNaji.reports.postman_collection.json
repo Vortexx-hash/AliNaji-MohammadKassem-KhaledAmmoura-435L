@@ -1,0 +1,854 @@
+{
+  "info": {
+    "name": "Ali Naji - Security Reports",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run requests in order using AliNaji.environment.local.json. Each run creates its own records. Tokens come from the team's identity service; local CLI tokens only test authorization."
+  },
+  "variable": [
+    {
+      "key": "expected_threats",
+      "value": ""
+    },
+    {
+      "key": "expected_vulnerabilities",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Available own services",
+      "item": [
+        {
+          "name": "Ali Naji - Read threat report source",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{threats_base}}/AliNaji/threats",
+            "description": "Read threat report source (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('expected_threats', JSON.stringify(pm.response.json()));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Generate threat report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/threats",
+            "description": "Generate threat report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json(); const source = JSON.parse(pm.collectionVariables.get('expected_threats'));",
+                  "pm.test('Total matches Threat Intelligence API', () => pm.expect(r.total_threats).to.eql(source.length));",
+                  "pm.test('Severity totals reconcile', () => pm.expect(Object.values(r.threats_by_severity).reduce((a,b)=>a+b,0)).to.eql(r.total_threats));",
+                  "pm.test('Type totals reconcile', () => pm.expect(Object.values(r.threats_by_type).reduce((a,b)=>a+b,0)).to.eql(r.total_threats));",
+                  "pm.test('Recent threats capped at ten', () => pm.expect(r.recent_added_threats.length).to.be.at.most(10));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Read vulnerability report source",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+            "description": "Read vulnerability report source (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('expected_vulnerabilities', JSON.stringify(pm.response.json()));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Generate vulnerability report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/vulnerabilities",
+            "description": "Generate vulnerability report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json(); const source = JSON.parse(pm.collectionVariables.get('expected_vulnerabilities'));",
+                  "pm.test('Total matches Vulnerability Management API', () => pm.expect(r.total_vulnerabilities).to.eql(source.length));",
+                  "pm.test('Severity totals reconcile', () => pm.expect(Object.values(r.vulnerabilities_by_severity).reduce((a,b)=>a+b,0)).to.eql(r.total_vulnerabilities));",
+                  "pm.test('Status totals reconcile', () => pm.expect(Object.values(r.vulnerabilities_by_status).reduce((a,b)=>a+b,0)).to.eql(r.total_vulnerabilities));",
+                  "pm.test('Critical count matches source', () => pm.expect(r.critical_vulnerabilities).to.eql(source.filter(v=>v.severity==='Critical').length));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Auditor generates threat report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/threats",
+            "description": "Auditor generates threat report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Team dependent reports",
+      "item": [
+        {
+          "name": "Ali Naji - Generate incidents report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/incidents",
+            "description": "Generate incidents report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const r=pm.response.json(); pm.test('Grouped counts reconcile', () => pm.expect(Object.values(r.incidents_by_severity).reduce((a,b)=>a+b,0)).to.eql(r.total_incidents));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Generate assets report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/assets",
+            "description": "Generate assets report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const r=pm.response.json(); pm.test('Grouped counts reconcile', () => pm.expect(Object.values(r.assets_by_type).reduce((a,b)=>a+b,0)).to.eql(r.total_assets));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Generate security summary report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/summary",
+            "description": "Generate security summary report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const r=pm.response.json(); pm.test('All six sources used', () => pm.expect(r.sources.length).to.eql(6));",
+                  "pm.test('Open incident count valid', () => pm.expect(r.open_incidents).to.be.at.most(r.incidents));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Generate activity report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/activity",
+            "description": "Generate activity report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "const r=pm.response.json(); pm.test('Login counters consistent', () => pm.expect(r.failed_login_attempts).to.be.at.most(r.login_attempts));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Auditor generates summary report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/summary",
+            "description": "Auditor generates summary report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Auditor generates incidents report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/incidents",
+            "description": "Auditor generates incidents report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Auditor generates assets report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/assets",
+            "description": "Auditor generates assets report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Auditor generates vulnerabilities report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/vulnerabilities",
+            "description": "Auditor generates vulnerabilities report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Auditor generates activity report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/activity",
+            "description": "Auditor generates activity report (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auditor_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Access control",
+      "item": [
+        {
+          "name": "Ali Naji - Reject analyst summary report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/summary",
+            "description": "Reject analyst summary report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{analyst_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject employee summary report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/summary",
+            "description": "Reject employee summary report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject analyst incidents report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/incidents",
+            "description": "Reject analyst incidents report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{analyst_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject employee incidents report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/incidents",
+            "description": "Reject employee incidents report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject analyst assets report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/assets",
+            "description": "Reject analyst assets report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{analyst_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject employee assets report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/assets",
+            "description": "Reject employee assets report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject analyst threats report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/threats",
+            "description": "Reject analyst threats report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{analyst_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject employee threats report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/threats",
+            "description": "Reject employee threats report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject analyst vulnerabilities report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/vulnerabilities",
+            "description": "Reject analyst vulnerabilities report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{analyst_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject employee vulnerabilities report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/vulnerabilities",
+            "description": "Reject employee vulnerabilities report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject analyst activity report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/activity",
+            "description": "Reject analyst activity report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{analyst_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject employee activity report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/activity",
+            "description": "Reject employee activity report (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ali Naji - Reject unauthenticated report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{reports_base}}/AliNaji/reports/summary",
+            "description": "Reject unauthenticated report (Ali Naji). Expected HTTP 401. See docs/api.md for fields and errors.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

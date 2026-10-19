@@ -48,6 +48,29 @@ Lifecycle: `Open -> Under Investigation -> In Progress -> Resolved -> Closed`. U
 
 Administrator can perform every operation. Analyst can list/get/search/update. Auditor can list/get/search. Regular Employee/User has no access. Deletion always requires Administrator.
 
+## Security Reports (Ali Naji)
+
+Base URL: `http://127.0.0.1:8006/AliNaji`. All six APIs are GET with no required query/body parameters. Only Security Administrator and Auditor can generate reports; Analyst and Employee requests return 403. Every success is HTTP 200 with a JSON object. Every object includes `generated_at` (UTC ISO timestamp) and `sources` (names of source services used). A missing, unreachable, invalid, duplicate, or incomplete source dataset returns 503 for the entire report.
+
+| API and path | Data sources | Returned fields besides metadata |
+| --- | --- | --- |
+| Generate security summary, `/reports/summary` | users, assets, incidents, threats, vulnerabilities, logs | users, assets, incidents, open_incidents, unresolved_incidents, incidents_by_severity, threats, critical_threats, vulnerabilities, critical_vulnerabilities, recent_security_activities |
+| Generate incident report, `/reports/incidents` | incidents | total_incidents, incidents_by_severity, incidents_by_status |
+| Generate asset report, `/reports/assets` | assets | total_assets, critical_assets, assets_by_type |
+| Generate threat report, `/reports/threats` | threats | total_threats, threats_by_severity, threats_by_type, recent_added_threats |
+| Generate vulnerability report, `/reports/vulnerabilities` | vulnerabilities | total_vulnerabilities, vulnerabilities_by_severity, vulnerabilities_by_status, critical_vulnerabilities |
+| Generate activity report, `/reports/activity` | logs | total_user_activities, login_attempts, failed_login_attempts, most_performed_actions, recent_security_activities |
+
+Counts are integers. Group distributions map enum/type names to counts. Severity/status/type enum groups include zero-valued categories. Asset type groups contain the types present in source data. `open_incidents` counts the literal Open status; `unresolved_incidents` additionally includes Under Investigation and Mitigated. Critical vulnerability counts include records in all statuses; status groups let users distinguish remediated records. Recent threat/activity lists contain at most ten records sorted newest first using timezone-aware timestamps. Source records are projected to report fields; user/password data are never returned.
+
+Activity `login_attempts` is the count of `LOGIN_SUCCESS` plus `LOGIN_FAILED` events; `failed_login_attempts` counts `LOGIN_FAILED`. Authentication failures on already protected resources are separate events. Most performed actions returns up to ten `{action,count}` objects ordered by descending count and then action name. These event names are an explicit team integration contract.
+
+Example response shape for an empty threat dataset (documentation only):
+
+```json
+{"generated_at":"2026-10-19T20:00:00+00:00","sources":["threats"],"total_threats":0,"threats_by_severity":{"Low":0,"Medium":0,"High":0,"Critical":0},"threats_by_type":{"IP Address":0,"Domain":0,"File Hash":0,"Malware Signature":0,"Other Indicators":0},"recent_added_threats":[]}
+```
+
 ## Errors (Ali Naji)
 
 All errors use `{"status":"error","message":"..."}`. Validation errors also contain `errors`, an array of `{field,message}`. No SQL statements, secrets, token contents, or stack traces appear in responses.

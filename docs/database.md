@@ -37,6 +37,39 @@ erDiagram
 
 The Assets API connection is an HTTP verification, not a database FK to an absent teammate table.
 
+## Reports database (Ali Naji)
+
+`data/reports.db` contains `audit_outbox` and `audit_delivery` only. Reports are derived by fetching live records over HTTP and calculating counts in memory. No new business entity/table is required by Service 6 or the assignment's database entity list. No copies of teammates' Users, Assets, Incidents, or Logs tables are created.
+
+```mermaid
+erDiagram
+    THREATS {
+        integer id PK
+        text threat_type UK
+        text threat_value UK
+        text description
+        text severity
+        text source
+        text date_added
+    }
+    AUDIT_OUTBOX ||--o| AUDIT_DELIVERY : "delivery receipt"
+    AUDIT_OUTBOX {
+        text event_id PK
+        text user_id "external identity reference"
+        text action
+        text description
+        text timestamp
+        text severity
+        text related_service
+    }
+    AUDIT_DELIVERY {
+        text event_id PK,FK
+        text delivered_at
+    }
+```
+
+The two UK labels on Threats represent one composite unique key on the pair, not separate unique columns. Audit transport tables exist independently in each service database.
+
 ## Audit transport tables (Ali Naji)
 
 Each service database also contains `audit_outbox` (UUID primary key and event content) and `audit_delivery` (one delivery receipt per event; foreign key to outbox). Triggers prevent changing/deleting original events. These tables preserve our events until delivery to the teammate's Logs API; they do not expose audit management endpoints. `user_id` is an external identity reference, not a local Users-table foreign key.

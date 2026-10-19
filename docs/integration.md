@@ -27,3 +27,20 @@ Set `ASSET_DETAIL_URL` to the teammate's complete get-asset endpoint, with the l
 Only verified external asset identifiers are inserted into `asset_references`. Vulnerabilities have an enforced local FK to this projection. The canonical asset remains in the teammate's service; no cross-file FK is possible across independently owned databases. Creation always rechecks the live asset even if a reference was previously cached. References preserve history if the canonical asset is subsequently deleted. Coordinate canonical asset deletion with the team; a global database FK or distributed deletion transaction is not claimed. No asset CRUD endpoints or seed assets are added here.
 
 Retry audit events for this service with `python -m scripts.audit_flush vulnerabilities` after loading `.env` values into the shell.
+
+## Report sources (Ali Naji)
+
+Set each `*_LIST_URL` to the full authorized endpoint (including its owner's name). The adapter forwards the caller's bearer token. Reports never access another service's SQLite file. The source must return a complete JSON array or `{data:[...],total:N}`. Counts are checked against total when present; pagination metadata, next pages, duplicate ids, missing fields, wrong enums, and naive timestamps are rejected with 503 rather than silently undercounting. If teammates choose paginated APIs, extend the adapter to fetch every page before deployment. Unknown extra record fields are ignored. No secrets from source users are included in report responses.
+
+| Configuration | Fields required in each source record |
+| --- | --- |
+| USERS_LIST_URL | id (nonempty string or positive integer) |
+| ASSETS_LIST_URL | id, asset_type, criticality_level (Low/Medium/High/Critical) |
+| INCIDENTS_LIST_URL | id, severity, status (Open/Under Investigation/Mitigated/Resolved/Closed) |
+| THREATS_LIST_URL | id, threat_type, threat_value, description, severity, source, timezone-aware date_added |
+| VULNERABILITIES_LIST_URL | id, severity, status |
+| LOGS_LIST_URL | id, action (or action_performed), description, timezone-aware timestamp, severity, related_service; optional user_id |
+
+The owned threat/vulnerability URLs default to ports 8004/8007 with `/AliNaji` prefixes. Other URLs intentionally have no defaults because teammate names/ports/contracts are not established. The asset and incident list APIs must allow Administrator/Auditor; report access uses the requesting user's permissions, not an impersonated admin. Logs should use `LOGIN_SUCCESS` and `LOGIN_FAILED` actions for login counters and Information/Warning/Error/Critical severity strings. Agree on these contracts with the owners before shared integration testing.
+
+Reports provide a live multi-service view, not a distributed transactional snapshot: records can change between source API reads. No result is returned if any required source fails. Each successful report generates its own audit event after collecting data; that event appears in subsequent activity reports once delivered. Retry with `python -m scripts.audit_flush reports` after loading configuration.
