@@ -19,3 +19,11 @@ Data changes and outbox insertion commit in one transaction. Permission/authenti
 ```
 
 The command sends up to 100 pending events per invocation; repeat until the health endpoint's pending count is zero. Do not treat undelivered events as proof of integration with the teammate's Logs service. The sink's API, permissions, and storage remain their responsibility.
+
+## Asset association (Ali Naji)
+
+Set `ASSET_DETAIL_URL` to the teammate's complete get-asset endpoint, with the literal `{id}` placeholder, e.g. `http://127.0.0.1:8002/MohammadKassem/assets/{id}` (illustrative only; the teammate chooses their port/prefix). The adapter forwards the authenticated caller's bearer token. Success must return `{id:7,asset_name:"..."}` or `{data:{id:7,asset_name:"..."}}`; `name` can substitute for asset_name. The id must be the same integer requested. Missing asset returns 404; missing URL, timeouts, upstream access rejection, malformed data, or errors return 503. A failed verification writes no vulnerability/reference record.
+
+Only verified external asset identifiers are inserted into `asset_references`. Vulnerabilities have an enforced local FK to this projection. The canonical asset remains in the teammate's service; no cross-file FK is possible across independently owned databases. Creation always rechecks the live asset even if a reference was previously cached. References preserve history if the canonical asset is subsequently deleted. Coordinate canonical asset deletion with the team; a global database FK or distributed deletion transaction is not claimed. No asset CRUD endpoints or seed assets are added here.
+
+Retry audit events for this service with `python -m scripts.audit_flush vulnerabilities` after loading `.env` values into the shell.

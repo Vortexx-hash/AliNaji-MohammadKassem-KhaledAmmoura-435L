@@ -1,0 +1,1184 @@
+{
+  "info": {
+    "name": "Ali Naji - Vulnerability Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run requests in order using AliNaji.environment.local.json. Each run creates its own records. Tokens come from the team's identity service; local CLI tokens only test authorization."
+  },
+  "variable": [
+    {
+      "key": "vulnerability_id",
+      "value": ""
+    },
+    {
+      "key": "critical_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Ali Naji - Create vulnerability on verified asset",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Requires ASSET_DETAIL_URL pointing to the teammate's real Assets service and asset_id identifying an existing asset. Starts Open with null resolution_date. CVSS is a numeric value from 0 to 10; severity is explicitly assessed.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Lab vulnerability\",\n  \"description\": \"Lab scanner finding requiring remediation\",\n  \"cve_identifier\": \"CVE-2025-12345\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"affected_asset_id\": {{asset_id}},\n  \"discovery_source\": \"Lab scanner\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('vulnerability_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Create critical vulnerability",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Create critical vulnerability (Ali Naji). Expected HTTP 201. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Critical lab finding\",\n  \"description\": \"Lab scanner finding requiring remediation\",\n  \"cve_identifier\": \"CVE-2025-12345\",\n  \"cvss_score\": 9.8,\n  \"severity\": \"Critical\",\n  \"affected_asset_id\": {{asset_id}},\n  \"discovery_source\": \"Lab scanner\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('critical_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Retrieve all vulnerabilities",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Retrieve all vulnerabilities (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Retrieve specific vulnerability",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Retrieve specific vulnerability (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search vulnerabilities by CVE",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/search?cve_identifier=CVE-2025-12345",
+        "description": "Search vulnerabilities by CVE (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search vulnerabilities by severity",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/search?severity=High",
+        "description": "Search vulnerabilities by severity (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search vulnerabilities by asset and status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/search?affected_asset_id={{asset_id}}&status=Open",
+        "description": "Search vulnerabilities by asset and status (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Search vulnerabilities with no matches",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/search?cve_identifier=CVE-1900-99999",
+        "description": "Search vulnerabilities with no matches (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Empty results', () => pm.expect(pm.response.json()).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Auditor reads vulnerability",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Auditor reads vulnerability (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Analyst updates vulnerability details",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Analyst updates vulnerability details (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Finding confirmed after investigation\",\n  \"severity\": \"Critical\",\n  \"cvss_score\": 9.1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject skipped lifecycle step",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Reject skipped lifecycle step (Ali Naji). Expected HTTP 409. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"Closed\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Begin vulnerability investigation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Begin vulnerability investigation (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"Under Investigation\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Begin remediation",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Begin remediation (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"In Progress\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Resolve vulnerability",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Resolve vulnerability (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"Resolved\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resolution timestamp recorded', () => pm.expect(pm.response.json().resolution_date).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Close vulnerability",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Close vulnerability (Ali Naji). Expected HTTP 200. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"Closed\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject backward lifecycle transition",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Reject backward lifecycle transition (Ali Naji). Expected HTTP 409. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"Open\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject analyst vulnerability creation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject analyst vulnerability creation (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Lab vulnerability\",\n  \"description\": \"Lab scanner finding requiring remediation\",\n  \"cve_identifier\": \"CVE-2025-12345\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"affected_asset_id\": {{asset_id}},\n  \"discovery_source\": \"Lab scanner\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject auditor update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Reject auditor update (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"severity\": \"Low\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject analyst vulnerability deletion",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Reject analyst vulnerability deletion (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject employee vulnerability access",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject employee vulnerability access (Ali Naji). Expected HTTP 403. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject unauthenticated vulnerability access",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject unauthenticated vulnerability access (Ali Naji). Expected HTTP 401. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid CVE",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject invalid CVE (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Lab vulnerability\",\n  \"description\": \"Lab scanner finding requiring remediation\",\n  \"cve_identifier\": \"invalid\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"affected_asset_id\": {{asset_id}},\n  \"discovery_source\": \"Lab scanner\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid CVSS",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject invalid CVSS (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Lab vulnerability\",\n  \"description\": \"Lab scanner finding requiring remediation\",\n  \"cve_identifier\": \"CVE-2025-12345\",\n  \"cvss_score\": 10.1,\n  \"severity\": \"High\",\n  \"affected_asset_id\": {{asset_id}},\n  \"discovery_source\": \"Lab scanner\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid asset id",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject invalid asset id (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Lab vulnerability\",\n  \"description\": \"Lab scanner finding requiring remediation\",\n  \"cve_identifier\": \"CVE-2025-12345\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"High\",\n  \"affected_asset_id\": 0,\n  \"discovery_source\": \"Lab scanner\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject invalid vulnerability severity",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject invalid vulnerability severity (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Lab vulnerability\",\n  \"description\": \"Lab scanner finding requiring remediation\",\n  \"cve_identifier\": \"CVE-2025-12345\",\n  \"cvss_score\": 8.1,\n  \"severity\": \"Severe\",\n  \"affected_asset_id\": {{asset_id}},\n  \"discovery_source\": \"Lab scanner\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject missing vulnerability fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities",
+        "description": "Reject missing vulnerability fields (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Reject empty vulnerability update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Reject empty vulnerability update (Ali Naji). Expected HTTP 422. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Retrieve missing vulnerability",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/2147483647",
+        "description": "Retrieve missing vulnerability (Ali Naji). Expected HTTP 404. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Delete vulnerability",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Delete vulnerability (Ali Naji). Expected HTTP 204. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Verify deleted vulnerability",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{vulnerability_id}}",
+        "description": "Verify deleted vulnerability (Ali Naji). Expected HTTP 404. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ali Naji - Delete critical vulnerability",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{vulnerabilities_base}}/AliNaji/vulnerabilities/{{critical_id}}",
+        "description": "Delete critical vulnerability (Ali Naji). Expected HTTP 204. See docs/api.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -25,6 +25,29 @@ A returned object adds `id` (integer) and `date_added` (UTC ISO 8601 timestamp).
 
 Only Security Administrator can create/update/delete. Administrator, Security Analyst, and Auditor can list/get. Administrator and Analyst can search. The general role description grants auditor search, but Service 4's explicit authorization list omits it; this implementation follows that narrower list. Confirm this inconsistency with the instructor before changing permissions. Regular Employee/User has no access.
 
+## Vulnerability Management (Ali Naji)
+
+Base URL: `http://127.0.0.1:8007/AliNaji`.
+
+| API | Method and path | Parameters/body | Success |
+| --- | --- | --- | --- |
+| Add vulnerability | `POST /vulnerabilities` | All seven fields in create example | 201 vulnerability object |
+| Retrieve all | `GET /vulnerabilities` | None | 200 array |
+| Retrieve specific | `GET /vulnerabilities/{id}` | Positive integer id | 200 object |
+| Update vulnerability | `PUT /vulnerabilities/{id}` | One or more of description, severity, status, cvss_score, resolution_date | 200 updated object |
+| Search vulnerabilities | `GET /vulnerabilities/search` | Optional cve_identifier, severity, affected_asset_id, status; exact matches combined with AND | 200 array, empty when no matches |
+| Delete vulnerability | `DELETE /vulnerabilities/{id}` | Positive integer id | 204 empty body |
+
+```json
+{"title":"Lab web service weakness","description":"Lab finding requiring remediation","cve_identifier":"CVE-2025-12345","cvss_score":8.1,"severity":"High","affected_asset_id":7,"discovery_source":"Lab scanner"}
+```
+
+The create response adds integer `id`, `status: "Open"`, UTC `creation_date`, and `resolution_date: null`. CVE format is `CVE-YYYY-NNNN` with four or more sequence digits (normalized uppercase; existence in an external CVE catalog is not claimed). CVSS must be a JSON number from 0 to 10, not a string or Boolean. Severity uses Low/Medium/High/Critical and remains an explicit assessment independent of CVSS. No duplicate-CVE restriction exists because one CVE can affect several assets. Title/source are nonempty strings up to 255 characters; description up to 4000; asset id is a positive integer that must exist in the real Assets service.
+
+Lifecycle: `Open -> Under Investigation -> In Progress -> Resolved -> Closed`. Updates may keep the current state, move one step forward, and change other allowed fields; skips/reversals return 409. Entering Resolved sets resolution_date to current UTC automatically. A supplied date must include a timezone and fall between creation and now; dates on unresolved records are rejected. Closing preserves the resolution timestamp. The asset/CVE/title/source and creation timestamp remain unchanged on updates.
+
+Administrator can perform every operation. Analyst can list/get/search/update. Auditor can list/get/search. Regular Employee/User has no access. Deletion always requires Administrator.
+
 ## Errors (Ali Naji)
 
 All errors use `{"status":"error","message":"..."}`. Validation errors also contain `errors`, an array of `{field,message}`. No SQL statements, secrets, token contents, or stack traces appear in responses.

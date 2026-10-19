@@ -18,7 +18,8 @@ def request(name, method, url, status=200, body=None, token="admin_token", check
         req["auth"] = {"type": "noauth"}
     if body is not None:
         req["header"] = [{"key": "Content-Type", "value": "application/json"}]
-        req["body"] = {"mode": "raw", "raw": json.dumps(body, indent=2), "options": {"raw": {"language": "json"}}}
+        raw = json.dumps(body, indent=2).replace('"{{asset_id}}"', '{{asset_id}}')
+        req["body"] = {"mode": "raw", "raw": raw, "options": {"raw": {"language": "json"}}}
     return {"name": f"Ali Naji - {name}", "request": req,
             "event": [{"listen": "test", "script": {"type": "text/javascript", "exec": test}}]}
 
@@ -85,9 +86,53 @@ def environment():
         for k, v in values.items()], "_postman_variable_scope": "environment"}, indent=2), encoding="utf-8")
 
 
+def vulnerabilities():
+    url = "{{vulnerabilities_base}}/AliNaji/vulnerabilities"
+    body = {"title": "Lab vulnerability", "description": "Lab scanner finding requiring remediation",
+            "cve_identifier": "CVE-2025-12345", "cvss_score": 8.1, "severity": "High",
+            "affected_asset_id": "{{asset_id}}", "discovery_source": "Lab scanner"}
+    path = url + "/{{vulnerability_id}}"
+    items = [
+        request("Create vulnerability on verified asset", "POST", url, 201, body, save="vulnerability_id",
+                description="Requires ASSET_DETAIL_URL pointing to the teammate's real Assets service and asset_id identifying an existing asset. Starts Open with null resolution_date. CVSS is a numeric value from 0 to 10; severity is explicitly assessed."),
+        request("Create critical vulnerability", "POST", url, 201, {**body, "title": "Critical lab finding", "severity": "Critical", "cvss_score": 9.8}, save="critical_id"),
+        request("Retrieve all vulnerabilities", "GET", url),
+        request("Retrieve specific vulnerability", "GET", path),
+        request("Search vulnerabilities by CVE", "GET", url + "/search?cve_identifier=CVE-2025-12345"),
+        request("Search vulnerabilities by severity", "GET", url + "/search?severity=High"),
+        request("Search vulnerabilities by asset and status", "GET", url + "/search?affected_asset_id={{asset_id}}&status=Open"),
+        request("Search vulnerabilities with no matches", "GET", url + "/search?cve_identifier=CVE-1900-99999", checks=["pm.test('Empty results', () => pm.expect(pm.response.json()).to.eql([]));"]),
+        request("Auditor reads vulnerability", "GET", path, token="auditor_token"),
+        request("Analyst updates vulnerability details", "PUT", path, body={"description": "Finding confirmed after investigation", "severity": "Critical", "cvss_score": 9.1}, token="analyst_token"),
+        request("Reject skipped lifecycle step", "PUT", path, 409, {"status": "Closed"}),
+        request("Begin vulnerability investigation", "PUT", path, body={"status": "Under Investigation"}, token="analyst_token"),
+        request("Begin remediation", "PUT", path, body={"status": "In Progress"}, token="analyst_token"),
+        request("Resolve vulnerability", "PUT", path, body={"status": "Resolved"}, token="analyst_token",
+                checks=["pm.test('Resolution timestamp recorded', () => pm.expect(pm.response.json().resolution_date).to.be.a('string'));" ]),
+        request("Close vulnerability", "PUT", path, body={"status": "Closed"}, token="analyst_token"),
+        request("Reject backward lifecycle transition", "PUT", path, 409, {"status": "Open"}),
+        request("Reject analyst vulnerability creation", "POST", url, 403, body, token="analyst_token"),
+        request("Reject auditor update", "PUT", path, 403, {"severity": "Low"}, token="auditor_token"),
+        request("Reject analyst vulnerability deletion", "DELETE", path, 403, token="analyst_token"),
+        request("Reject employee vulnerability access", "GET", url, 403, token="user_token"),
+        request("Reject unauthenticated vulnerability access", "GET", url, 401, token=None),
+        request("Reject invalid CVE", "POST", url, 422, {**body, "cve_identifier": "invalid"}),
+        request("Reject invalid CVSS", "POST", url, 422, {**body, "cvss_score": 10.1}),
+        request("Reject invalid asset id", "POST", url, 422, {**body, "affected_asset_id": 0}),
+        request("Reject invalid vulnerability severity", "POST", url, 422, {**body, "severity": "Severe"}),
+        request("Reject missing vulnerability fields", "POST", url, 422, {}),
+        request("Reject empty vulnerability update", "PUT", path, 422, {}),
+        request("Retrieve missing vulnerability", "GET", url + "/2147483647", 404),
+        request("Delete vulnerability", "DELETE", path, 204),
+        request("Verify deleted vulnerability", "GET", path, 404),
+        request("Delete critical vulnerability", "DELETE", url + "/{{critical_id}}", 204),
+    ]
+    write_collection("vulnerabilities", "Vulnerability Management", items, ("vulnerability_id", "critical_id"))
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("service", choices=["threats"])
+    parser.add_argument("service", choices=["threats", "vulnerabilities"])
     args = parser.parse_args()
     globals()[args.service]()
     environment()

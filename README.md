@@ -25,3 +25,15 @@ Open `http://127.0.0.1:8004/AliNaji/docs` for interactive API schemas. Import th
 ```
 
 Databases and their tables are created on service startup under `data/`; SQL sources are in `database/`. See [API documentation](docs/api.md), [integration contracts](docs/integration.md), and [database design](docs/database.md).
+
+## Vulnerability Management (Ali Naji)
+
+Use the helper scripts to share the ignored local configuration between terminals:
+
+```powershell
+.\scripts\setup_local.ps1
+# Add ASSET_DETAIL_URL=http://127.0.0.1:<port>/<TeammateFullName>/assets/{id} to .env
+.\scripts\run.ps1 vulnerabilities
+```
+
+The service runs on port 8007. Set Postman's `asset_id` to a real asset created by your teammate. Creation verifies that asset over HTTP and saves a local reference with a real foreign key. With no Assets API configured, creation returns 503; other operations remain testable. The test suite uses isolated mock HTTP fixtures for successful asset lookup, not fake production assets. Import `AliNaji.vulnerabilities.postman_collection.json` and run requests in order after configuring the real dependency.
