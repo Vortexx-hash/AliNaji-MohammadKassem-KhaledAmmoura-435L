@@ -81,6 +81,24 @@ def logs_client(settings):
 
 
 @pytest.fixture
+def notifications_client(settings):
+    from dataclasses import replace
+    import httpx
+    from services.notifications.app import create_app
+    from shared.upstream import UpstreamClient
+
+    app = create_app(replace(settings, sources={"users": "http://users.test/MohamedKassem/users"}))
+
+    def users_api(request):
+        assert request.headers.get("Authorization", "").startswith("Bearer ")
+        return httpx.Response(200, json=[{"id": 5, "username": "lab_employee"}, {"id": 6, "username": "lab_analyst"}])
+
+    app.state.upstream = UpstreamClient(httpx.MockTransport(users_api))
+    with TestClient(app) as client:
+        yield client
+
+
+@pytest.fixture
 def forward():
     """Route an httpx call made by one service into another service's TestClient."""
     import httpx
