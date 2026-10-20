@@ -1,0 +1,1559 @@
+{
+  "info": {
+    "name": "Mohamed Kassem - Users and Identity Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run the Mohamed Kassem collections in order: Users first (it logs in and stores tokens and user ids in the environment), then Logs, then Notifications. Use MohamedKassem.environment.json and fill admin_password locally."
+  },
+  "variable": [
+    {
+      "key": "run_id",
+      "value": ""
+    },
+    {
+      "key": "today",
+      "value": ""
+    },
+    {
+      "key": "other_id",
+      "value": ""
+    },
+    {
+      "key": "other_username",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Mohamed Kassem - Login administrator",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Verifies the administrator's username and password against the stored bcrypt hash and returns a signed JWT, saved as admin_token. The first administrator is created with scripts.create_admin. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if (pm.response.code < 300) pm.environment.set('admin_token', pm.response.json().access_token);",
+              "if (pm.response.code < 300) pm.environment.set('admin_id', pm.response.json().user.id);",
+              "pm.test('Bearer token issued', () => pm.expect(pm.response.json().token_type).to.eql('bearer'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Register security analyst",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "An administrator registers a privileged account. The password is hashed before it is stored and is never returned. Expected HTTP 201. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Analyst\",\n  \"username\": \"analyst_{{run_id}}\",\n  \"email\": \"analyst_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Security Analyst\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code < 300) pm.environment.set('analyst_id', pm.response.json().id);",
+              "if (pm.response.code < 300) pm.environment.set('analyst_username', pm.response.json().username);",
+              "pm.test('No password data returned', () => pm.expect(pm.response.text()).not.to.include('password'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Register auditor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Register auditor (Mohamed Kassem). Expected HTTP 201. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Auditor\",\n  \"username\": \"auditor_{{run_id}}\",\n  \"email\": \"auditor_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Auditor\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code < 300) pm.environment.set('auditor_id', pm.response.json().id);",
+              "if (pm.response.code < 300) pm.environment.set('auditor_username', pm.response.json().username);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Self-register regular employee",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Public self-registration. Without an administrator token only the Regular Employee/User role is allowed. Expected HTTP 201. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Employee\",\n  \"username\": \"employee_{{run_id}}\",\n  \"email\": \"employee_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Regular Employee/User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code < 300) pm.environment.set('user_id', pm.response.json().id);",
+              "if (pm.response.code < 300) pm.environment.set('user_username', pm.response.json().username);",
+              "pm.test('No password data returned', () => pm.expect(pm.response.text()).not.to.include('password'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Self-register second employee",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Self-register second employee (Mohamed Kassem). Expected HTTP 201. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Second\",\n  \"username\": \"second_{{run_id}}\",\n  \"email\": \"second_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Regular Employee/User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('other_username', pm.response.json().username);",
+              "if (pm.response.code === 201) pm.collectionVariables.set('other_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Login analyst with username",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Login analyst with username (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"analyst_{{run_id}}\",\n  \"password\": \"{{test_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if (pm.response.code < 300) pm.environment.set('analyst_token', pm.response.json().access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Login auditor with email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Login accepts either the username or the email. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"auditor_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if (pm.response.code < 300) pm.environment.set('auditor_token', pm.response.json().access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Login regular employee",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Login regular employee (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"employee_{{run_id}}\",\n  \"password\": \"{{test_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if (pm.response.code < 300) pm.environment.set('user_token', pm.response.json().access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject wrong password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Failed authentication. Recorded as a LOGIN_FAILED audit event. Expected HTTP 401. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"employee_{{run_id}}\",\n  \"password\": \"Wrong#Pass1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject unknown username",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Reject unknown username (Mohamed Kassem). Expected HTTP 401. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"nobody_{{run_id}}\",\n  \"password\": \"Wrong#Pass1\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject login without username or email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Reject login without username or email (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"password\": \"{{test_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject duplicate username",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Usernames are unique without regard to case, enforced by a UNIQUE constraint in the users table. Expected HTTP 409. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Employee\",\n  \"username\": \"employee_{{run_id}}\",\n  \"email\": \"copy_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Regular Employee/User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('Duplicate username message', () => pm.expect(pm.response.json().message).to.eql('Username already exists'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject duplicate email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Reject duplicate email (Mohamed Kassem). Expected HTTP 409. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Employee\",\n  \"username\": \"copy_{{run_id}}\",\n  \"email\": \"employee_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Regular Employee/User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject invalid email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Reject invalid email (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Employee\",\n  \"username\": \"bad_{{run_id}}\",\n  \"email\": \"not-an-email\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Regular Employee/User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject weak password",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Passwords need at least 8 characters with an uppercase letter, a lowercase letter, a digit and a symbol. Expected HTTP 422. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Employee\",\n  \"username\": \"weak_{{run_id}}\",\n  \"email\": \"weak_{{run_id}}@example.com\",\n  \"password\": \"password\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Regular Employee/User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject missing registration fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Reject missing registration fields (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject invalid role",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Reject invalid role (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Employee\",\n  \"username\": \"role_{{run_id}}\",\n  \"email\": \"employee_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Admin\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject anonymous administrator registration",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Reject anonymous administrator registration (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Intruder\",\n  \"username\": \"intruder_{{run_id}}\",\n  \"email\": \"intruder_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Security Administrator\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst registering users",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/register",
+        "description": "Reject analyst registering users (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Blocked\",\n  \"username\": \"blocked_{{run_id}}\",\n  \"email\": \"blocked_{{run_id}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"department\": \"Security Operations\",\n  \"role\": \"Regular Employee/User\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve all users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users",
+        "description": "Retrieve all users (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Records array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+              "pm.test('No password data returned', () => pm.expect(pm.response.text()).not.to.include('password'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Auditor retrieves all users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users",
+        "description": "Auditor retrieves all users (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst listing users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users",
+        "description": "Reject analyst listing users (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee listing users",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users",
+        "description": "Reject employee listing users (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject unauthenticated listing",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users",
+        "description": "Reject unauthenticated listing (Mohamed Kassem). Expected HTTP 401. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve user by username",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/{{user_username}}",
+        "description": "Retrieve user by username (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('No password data returned', () => pm.expect(pm.response.text()).not.to.include('password'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve non-existing username",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/missing_{{run_id}}",
+        "description": "Retrieve non-existing username (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Employee retrieves own profile",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/{{user_username}}",
+        "description": "Employee retrieves own profile (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee reading another profile",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/{{analyst_username}}",
+        "description": "Reject employee reading another profile (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Employee updates own information",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/{{user_id}}",
+        "description": "Users may update their own full_name, email and department. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"full_name\": \"Lab Employee Updated\",\n  \"email\": \"updated_{{run_id}}@example.com\",\n  \"department\": \"Finance\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Department updated', () => pm.expect(pm.response.json().department).to.eql('Finance'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee updating another user",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/{{other_id}}",
+        "description": "Reject employee updating another user (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"department\": \"Finance\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee changing own role",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/{{user_id}}",
+        "description": "Reject employee changing own role (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"Security Administrator\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject empty update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/{{user_id}}",
+        "description": "Reject empty update (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject non-updatable field",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/{{user_id}}",
+        "description": "Reject non-updatable field (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"renamed_{{run_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Update non-existing user",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/2147483647",
+        "description": "Update non-existing user (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"department\": \"Finance\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Administrator changes user role",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/{{other_id}}",
+        "description": "Role assignment is administrator only. Recorded as ROLE_CHANGED and the user receives a System Notification. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"Security Analyst\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Role changed', () => pm.expect(pm.response.json().role).to.eql('Security Analyst'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Administrator suspends account",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/{{other_id}}",
+        "description": "Administrator suspends account (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"account_status\": \"Suspended\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject suspended account login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{users_base}}/MohamedKassem/users/login",
+        "description": "Inactive and suspended accounts cannot authenticate even with the correct password. Expected HTTP 403. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "noauth"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{other_username}}\",\n  \"password\": \"{{test_password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst deleting user",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/{{other_id}}",
+        "description": "Only Security Administrator tokens pass the role check; the denial is recorded as PERMISSION_DENIED. Expected HTTP 403. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject auditor deleting user",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/{{other_id}}",
+        "description": "Reject auditor deleting user (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Delete user",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/{{other_id}}",
+        "description": "Delete user (Mohamed Kassem). Expected HTTP 204. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Verify deleted user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{users_base}}/MohamedKassem/users/{{other_username}}",
+        "description": "Verify deleted user (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.info.requestName === 'Mohamed Kassem - Login administrator') {",
+          "  pm.collectionVariables.set('run_id', Math.random().toString(36).slice(2, 8));",
+          "  pm.collectionVariables.set('today', new Date().toISOString().slice(0, 10));",
+          "}"
+        ]
+      }
+    }
+  ]
+}
