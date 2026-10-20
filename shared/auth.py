@@ -62,8 +62,12 @@ def require(*roles: Role):
             except (httpx.HTTPError, httpx.InvalidURL, ValueError, KeyError, TypeError):
                 raise HTTPException(503, "Identity service unavailable or returned invalid data")
         if principal.role not in roles:
-            audit.denied(principal.user_id, "PERMISSION_DENIED", f"{request.method} {request.url.path}")
-            raise HTTPException(403, "User does not have permission to perform this operation")
+            forbid(request, principal)
         return principal
 
     return authorize
+
+
+def forbid(request: Request, principal: Principal):
+    request.app.state.audit.denied(principal.user_id, "PERMISSION_DENIED", f"{request.method} {request.url.path}")
+    raise HTTPException(403, "User does not have permission to perform this operation")
