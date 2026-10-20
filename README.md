@@ -1,6 +1,23 @@
-# Sprint 1 backend (Ali Naji)
+# Sprint 1 backend
 
-Ali Naji owns Threat Intelligence (Service 4), Vulnerability Management (Service 7), and Security Reports (Service 6). Work is isolated on `ali-naji/sprint1-services`. The six other services remain the responsibility of Mohammad Kassem and Khaled Ammoura. No frontend is required.
+| Owner | Services | Ports | Route prefix | Guide |
+| --- | --- | --- | --- | --- |
+| Mohamed Kassem | Users and Identity Management, Security Audit Logging, Notification and Alert Management | 8001, 8005, 8008 | `/MohamedKassem` | [docs/users-logs-notifications.md](docs/users-logs-notifications.md) |
+| Ali Naji | Threat Intelligence, Security Reports, Vulnerability Management | 8004, 8006, 8007 | `/AliNaji` | sections below |
+
+## Quick start with real login (Mohamed Kassem)
+
+```bash
+scripts/setup_local.sh                       # Windows: .\scripts\setup_local.ps1
+.venv/bin/python -m scripts.create_admin     # first Security Administrator (admin1)
+scripts/run.sh users                         # Windows: .\scripts\run.ps1 users
+```
+
+Start `users`, `logs` and `notifications` (and Ali Naji's services) in separate terminals. Tokens from `POST /MohamedKassem/users/login` are accepted by every service, and every service sends its audit events to the Logs service. In Postman, run the Mohamed Kassem collections in order: Users, Logs, Notifications. See the [guide](docs/users-logs-notifications.md).
+
+# Ali Naji's services
+
+Ali Naji owns Threat Intelligence (Service 4), Vulnerability Management (Service 7), and Security Reports (Service 6). Work is isolated on `ali-naji/sprint1-services`. Users, Logs and Notifications belong to Mohamed Kassem (see the table above); Assets, Incidents and Playbooks belong to Khaled Ammoura. No frontend is required.
 
 Read the [implementation handoff](docs/HANDOFF.md) for completed features, verification results, commits, and the remaining teammate integration/submission tasks.
 
