@@ -1,3 +1,5 @@
+import logging
+
 import httpx
 from fastapi import HTTPException
 from pydantic import ValidationError
@@ -31,6 +33,31 @@ class UpstreamClient:
         if not isinstance(data, dict) or type(data.get("id")) is not int or data["id"] != asset_id:
             raise HTTPException(503, "Assets service returned an invalid asset record")
         return data
+
+    def user(self, list_url, user_id, token):
+        data = self.get_json(list_url, token, "Users")
+        if isinstance(data, dict) and "data" in data:
+            data = data["data"]
+        if not isinstance(data, list):
+            raise HTTPException(503, "Users service returned an invalid user list")
+        for record in data:
+            if isinstance(record, dict) and record.get("id") == user_id:
+                return record
+        raise HTTPException(404, "Recipient user not found")
+
+    def notify(self, url, token, user_id, title, message, notification_type, severity="Medium"):
+        """Best effort: a failed notification is logged and never fails the caller's request."""
+        if not url:
+            return False
+        try:
+            with httpx.Client(timeout=3, follow_redirects=False, transport=self.transport) as client:
+                client.post(url, headers={"Authorization": f"Bearer {token}"}, json={
+                    "user_id": user_id, "title": title, "message": message,
+                    "notification_type": notification_type, "severity": severity}).raise_for_status()
+            return True
+        except (httpx.HTTPError, httpx.InvalidURL):
+            logging.getLogger(__name__).warning("Notification for user %s was not delivered", user_id)
+            return False
 
     def records(self, url, token, source, model):
         data = self.get_json(url, token, source)

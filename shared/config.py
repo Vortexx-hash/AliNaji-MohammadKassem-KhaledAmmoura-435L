@@ -15,6 +15,7 @@ class Settings:
     asset_detail_url: str = ""
     audit_post_url: str = ""
     audit_service_token: str = ""
+    notification_post_url: str = ""
     sources: dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self):
@@ -30,10 +31,13 @@ class Settings:
             jwt_audience=os.getenv("JWT_AUDIENCE", "security-services"),
             identity_me_url=os.getenv("IDENTITY_ME_URL", ""),
             asset_detail_url=os.getenv("ASSET_DETAIL_URL", ""),
-            audit_post_url=os.getenv("AUDIT_POST_URL", ""),
+            audit_post_url=os.getenv("AUDIT_POST_URL", "http://127.0.0.1:8005/MohamedKassem/logs"),
             audit_service_token=os.getenv("AUDIT_SERVICE_TOKEN", ""),
+            notification_post_url=os.getenv("NOTIFICATION_POST_URL",
+                                            "http://127.0.0.1:8008/MohamedKassem/notifications"),
             sources={name: os.getenv(f"{name.upper()}_LIST_URL", default) for name, default in {
-                "users": "", "assets": "", "incidents": "", "logs": "",
+                "users": "http://127.0.0.1:8001/MohamedKassem/users", "assets": "", "incidents": "",
+                "logs": "http://127.0.0.1:8005/MohamedKassem/logs",
                 "threats": "http://127.0.0.1:8004/AliNaji/threats",
                 "vulnerabilities": "http://127.0.0.1:8007/AliNaji/vulnerabilities",
             }.items()},
