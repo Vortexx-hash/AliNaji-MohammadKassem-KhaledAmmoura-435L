@@ -1,4 +1,4 @@
-param([ValidateSet('threats','vulnerabilities','reports')][string]$Service = 'threats')
+param([ValidateSet('users','logs','notifications','threats','vulnerabilities','reports')][string]$Service = 'threats')
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath (Split-Path -Parent $PSScriptRoot)
 if (Test-Path -LiteralPath '.env') {
@@ -8,6 +8,6 @@ if (Test-Path -LiteralPath '.env') {
         }
     }
 }
-$servicePorts = @{threats=8004; vulnerabilities=8007; reports=8006}
+$servicePorts = @{users=8001; logs=8005; notifications=8008; threats=8004; vulnerabilities=8007; reports=8006}
 & .\.venv\Scripts\python.exe -m uvicorn "services.$Service.app:create_app" --factory --host 127.0.0.1 --port $servicePorts[$Service]
 exit $LASTEXITCODE
