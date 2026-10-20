@@ -71,3 +71,25 @@ def users_client(settings, monkeypatch):
 def new_user():
     return {"full_name": "Lab Employee", "username": "lab_employee", "email": "employee@example.com",
             "password": "Lab#Pass2026", "department": "Finance", "role": "Regular Employee/User"}
+
+
+@pytest.fixture
+def logs_client(settings):
+    from services.logs.app import create_app
+    with TestClient(create_app(settings)) as client:
+        yield client
+
+
+@pytest.fixture
+def forward():
+    """Route an httpx call made by one service into another service's TestClient."""
+    import httpx
+
+    def to(client):
+        def handler(request):
+            response = client.request(request.method, request.url.path, params=request.url.params,
+                                      headers={k: v for k, v in request.headers.items() if k.lower() != "host"},
+                                      content=request.content)
+            return httpx.Response(response.status_code, content=response.content, headers=response.headers)
+        return httpx.MockTransport(handler)
+    return to
