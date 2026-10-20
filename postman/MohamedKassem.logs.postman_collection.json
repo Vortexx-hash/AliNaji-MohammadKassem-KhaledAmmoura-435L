@@ -1,0 +1,1337 @@
+{
+  "info": {
+    "name": "Mohamed Kassem - Security Audit Logging",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run the Mohamed Kassem collections in order: Users first (it logs in and stores tokens and user ids in the environment), then Logs, then Notifications. Use MohamedKassem.environment.json and fill admin_password locally."
+  },
+  "variable": [
+    {
+      "key": "run_id",
+      "value": ""
+    },
+    {
+      "key": "today",
+      "value": ""
+    },
+    {
+      "key": "log_id",
+      "value": ""
+    },
+    {
+      "key": "idempotent_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Mohamed Kassem - Create log record",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Administrator or service token. Users, Notifications, Threats, Vulnerabilities and Reports deliver their events here automatically. Expected HTTP 201. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"action\": \"MANUAL_REVIEW\",\n  \"description\": \"Administrator reviewed the employee's access request\",\n  \"severity\": \"Information\",\n  \"related_service\": \"Security Audit Logging\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('log_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Create warning log for analyst",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Create warning log for analyst (Mohamed Kassem). Expected HTTP 201. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{analyst_id}},\n  \"action\": \"SUSPICIOUS_ACTIVITY\",\n  \"description\": \"Repeated access to restricted files\",\n  \"severity\": \"Warning\",\n  \"related_service\": \"Incident Management\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Create critical log with unknown actor",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "user_id is null when no authenticated actor exists. Expected HTTP 201. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": null,\n  \"action\": \"MALWARE_DETECTED\",\n  \"description\": \"Endpoint agent reported malware\",\n  \"severity\": \"Critical\",\n  \"related_service\": \"Threat Intelligence\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Create log with idempotency key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-{{run_id}}"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Create log with idempotency key (Mohamed Kassem). Expected HTTP 201. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"action\": \"EXPORT_REQUESTED\",\n  \"description\": \"Employee requested a data export\",\n  \"severity\": \"Information\",\n  \"related_service\": \"Security Audit Logging\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('idempotent_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Replay same idempotency key",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "postman-{{run_id}}"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "A retried delivery with the same Idempotency-Key returns the stored record instead of a duplicate. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"action\": \"EXPORT_REQUESTED\",\n  \"description\": \"Employee requested a data export\",\n  \"severity\": \"Information\",\n  \"related_service\": \"Security Audit Logging\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Stored record returned once', () => pm.expect(Number(pm.response.json().id)).to.eql(Number(pm.collectionVariables.get('idempotent_id'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject invalid log severity",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject invalid log severity (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"action\": \"MANUAL_REVIEW\",\n  \"description\": \"Administrator reviewed the employee's access request\",\n  \"severity\": \"Severe\",\n  \"related_service\": \"Security Audit Logging\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject missing log fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject missing log fields (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject timestamp without timezone",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject timestamp without timezone (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"action\": \"MANUAL_REVIEW\",\n  \"description\": \"Administrator reviewed the employee's access request\",\n  \"severity\": \"Information\",\n  \"related_service\": \"Security Audit Logging\",\n  \"timestamp\": \"2026-10-01T08:30:00\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst creating log",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject analyst creating log (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"action\": \"MANUAL_REVIEW\",\n  \"description\": \"Administrator reviewed the employee's access request\",\n  \"severity\": \"Information\",\n  \"related_service\": \"Security Audit Logging\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject auditor creating log",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject auditor creating log (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"action\": \"MANUAL_REVIEW\",\n  \"description\": \"Administrator reviewed the employee's access request\",\n  \"severity\": \"Information\",\n  \"related_service\": \"Security Audit Logging\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve all logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Retrieve all logs (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Records array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Auditor retrieves all logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Auditor retrieves all logs (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst listing all logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject analyst listing all logs (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee listing logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject employee listing logs (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject unauthenticated log access",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs",
+        "description": "Reject unauthenticated log access (Mohamed Kassem). Expected HTTP 401. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve specific log",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/{{log_id}}",
+        "description": "Retrieve specific log (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Analyst retrieves specific log",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/{{log_id}}",
+        "description": "Analyst retrieves specific log (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve missing log",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/2147483647",
+        "description": "Retrieve missing log (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search logs by user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?user_id={{user_id}}",
+        "description": "Search logs by user (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the user_id filter', () => pm.response.json().forEach(r => pm.expect(String(r.user_id)).to.eql(String(pm.environment.get('user_id')))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search logs by action",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?action=LOGIN_SUCCESS",
+        "description": "Search logs by action (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the action filter', () => pm.response.json().forEach(r => pm.expect(String(r.action)).to.eql(String('LOGIN_SUCCESS'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search logs by severity",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?severity=Warning",
+        "description": "Search logs by severity (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the severity filter', () => pm.response.json().forEach(r => pm.expect(String(r.severity)).to.eql(String('Warning'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search logs by related service",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?related_service=Users%20and%20Identity%20Management",
+        "description": "Search logs by related service (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the related_service filter', () => pm.response.json().forEach(r => pm.expect(String(r.related_service)).to.eql(String('Users and Identity Management'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search logs by date",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?date={{today}}",
+        "description": "date is a UTC calendar day in YYYY-MM-DD format; all filters combine with AND. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Same UTC day', () => pm.response.json().forEach(r => pm.expect(r.timestamp.slice(0, 10)).to.eql(pm.collectionVariables.get('today'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search logs with combined filters",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?user_id={{analyst_id}}&severity=Warning",
+        "description": "Search logs with combined filters (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('At least one match', () => pm.expect(pm.response.json().length).to.be.above(0));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search logs with no matches",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?action=ABSENT_{{run_id}}",
+        "description": "Search logs with no matches (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Empty results', () => pm.expect(pm.response.json()).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Auditor searches logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?severity=Warning",
+        "description": "Auditor searches logs (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Analyst searches logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?severity=Warning",
+        "description": "Analyst searches logs (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee searching logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search",
+        "description": "Reject employee searching logs (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject invalid search value",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?severity=Severe",
+        "description": "Reject invalid search value (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve logs by user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/user/{{user_id}}",
+        "description": "Retrieve logs by user (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('User has activity', () => pm.expect(pm.response.json().length).to.be.above(0));",
+              "pm.test('Every record matches the user_id filter', () => pm.response.json().forEach(r => pm.expect(String(r.user_id)).to.eql(String(pm.environment.get('user_id')))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Auditor retrieves logs by user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/user/{{user_id}}",
+        "description": "Auditor retrieves logs by user (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve logs for user without activity",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/user/no-activity-{{run_id}}",
+        "description": "A user with no recorded activity returns HTTP 200 with an empty array. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Empty results', () => pm.expect(pm.response.json()).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst retrieving logs by user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/user/{{user_id}}",
+        "description": "Reject analyst retrieving logs by user (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst deleting log",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/{{log_id}}",
+        "description": "Reject analyst deleting log (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee deleting log",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/{{log_id}}",
+        "description": "Reject employee deleting log (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Delete log",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/{{log_id}}",
+        "description": "Only administrators can delete logs. The deletion itself is recorded as a LOG_DELETED event. Expected HTTP 204. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Verify deleted log",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/{{log_id}}",
+        "description": "Verify deleted log (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Verify deletion was audited",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{logs_base}}/MohamedKassem/logs/search?action=LOG_DELETED&date={{today}}",
+        "description": "Verify deletion was audited (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('LOG_DELETED recorded', () => pm.expect(pm.response.json().length).to.be.above(0));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.info.requestName === 'Mohamed Kassem - Create log record') {",
+          "  pm.collectionVariables.set('run_id', Math.random().toString(36).slice(2, 8));",
+          "  pm.collectionVariables.set('today', new Date().toISOString().slice(0, 10));",
+          "}"
+        ]
+      }
+    }
+  ]
+}

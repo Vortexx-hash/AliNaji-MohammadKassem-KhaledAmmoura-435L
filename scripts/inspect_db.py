@@ -7,7 +7,7 @@ from pathlib import Path
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("service", choices=["threats", "vulnerabilities", "reports"])
+    parser.add_argument("service", choices=["users", "logs", "notifications", "threats", "vulnerabilities", "reports"])
     parser.add_argument("--data-dir", type=Path, default=Path("data"))
     args = parser.parse_args()
     path = (args.data_dir / f"{args.service}.db").resolve()

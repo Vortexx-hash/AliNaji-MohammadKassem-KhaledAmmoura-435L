@@ -1,0 +1,1363 @@
+{
+  "info": {
+    "name": "Mohamed Kassem - Notification and Alert Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run the Mohamed Kassem collections in order: Users first (it logs in and stores tokens and user ids in the environment), then Logs, then Notifications. Use MohamedKassem.environment.json and fill admin_password locally."
+  },
+  "variable": [
+    {
+      "key": "run_id",
+      "value": ""
+    },
+    {
+      "key": "today",
+      "value": ""
+    },
+    {
+      "key": "notification_id",
+      "value": ""
+    },
+    {
+      "key": "system_notification_id",
+      "value": ""
+    },
+    {
+      "key": "read_date",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Mohamed Kassem - Create security alert for employee",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Administrator or service token. The recipient is verified through the Users service before the notification is stored as Unread. Expected HTTP 201. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"title\": \"Suspicious login detected\",\n  \"message\": \"A login to your account from a new location was blocked.\",\n  \"notification_type\": \"Security Alert\",\n  \"severity\": \"High\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('notification_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Create incident assignment for analyst",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Create incident assignment for analyst (Mohamed Kassem). Expected HTTP 201. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{analyst_id}},\n  \"title\": \"Incident assigned\",\n  \"message\": \"You were assigned a phishing incident.\",\n  \"notification_type\": \"Incident Assignment\",\n  \"severity\": \"Medium\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Create system notification for employee",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Create system notification for employee (Mohamed Kassem). Expected HTTP 201. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"title\": \"Scheduled maintenance\",\n  \"message\": \"The VPN will be unavailable tonight.\",\n  \"notification_type\": \"System Notification\",\n  \"severity\": \"Low\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('system_notification_id', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject unknown recipient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Reject unknown recipient (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": 2147483647,\n  \"title\": \"Suspicious login detected\",\n  \"message\": \"A login to your account from a new location was blocked.\",\n  \"notification_type\": \"Security Alert\",\n  \"severity\": \"High\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject invalid notification type",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Reject invalid notification type (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"title\": \"Suspicious login detected\",\n  \"message\": \"A login to your account from a new location was blocked.\",\n  \"notification_type\": \"Alert\",\n  \"severity\": \"High\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject invalid notification severity",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Reject invalid notification severity (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"title\": \"Suspicious login detected\",\n  \"message\": \"A login to your account from a new location was blocked.\",\n  \"notification_type\": \"Security Alert\",\n  \"severity\": \"Severe\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject missing notification fields",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Reject missing notification fields (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst creating notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Reject analyst creating notification (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"title\": \"Suspicious login detected\",\n  \"message\": \"A login to your account from a new location was blocked.\",\n  \"notification_type\": \"Security Alert\",\n  \"severity\": \"High\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject auditor creating notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Reject auditor creating notification (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"title\": \"Suspicious login detected\",\n  \"message\": \"A login to your account from a new location was blocked.\",\n  \"notification_type\": \"Security Alert\",\n  \"severity\": \"High\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee creating notification",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{notifications_base}}/MohamedKassem/notifications",
+        "description": "Reject employee creating notification (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"user_id\": {{user_id}},\n  \"title\": \"Suspicious login detected\",\n  \"message\": \"A login to your account from a new location was blocked.\",\n  \"notification_type\": \"Security Alert\",\n  \"severity\": \"High\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Employee retrieves own notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/user/{{user_id}}",
+        "description": "Employee retrieves own notifications (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Two notifications', () => pm.expect(pm.response.json().length).to.be.at.least(2));",
+              "pm.test('Every record matches the user_id filter', () => pm.response.json().forEach(r => pm.expect(String(r.user_id)).to.eql(String(pm.environment.get('user_id')))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Administrator retrieves user notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/user/{{user_id}}",
+        "description": "Administrator retrieves user notifications (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Auditor retrieves user notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/user/{{user_id}}",
+        "description": "Auditor retrieves user notifications (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Analyst retrieves own notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/user/{{analyst_id}}",
+        "description": "Analyst retrieves own notifications (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve empty notification results",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/user/{{auditor_id}}",
+        "description": "A user without notifications returns HTTP 200 with an empty array. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Empty results', () => pm.expect(pm.response.json()).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee reading another user's notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/user/{{analyst_id}}",
+        "description": "Employees and analysts can only read notifications addressed to them. Expected HTTP 403. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve specific notification",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{notification_id}}",
+        "description": "Retrieve specific notification (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Auditor retrieves specific notification",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{notification_id}}",
+        "description": "Auditor retrieves specific notification (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Retrieve missing notification",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/2147483647",
+        "description": "Retrieve missing notification (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst reading employee notification",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{notification_id}}",
+        "description": "Reject analyst reading employee notification (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Mark notification as read",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{notification_id}}/read",
+        "description": "Moves the notification from Unread to Read and records read_date. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "const n = pm.response.json(); pm.test('Status Read with read date', () => { pm.expect(n.status).to.eql('Read'); pm.expect(n.read_date).to.be.a('string'); });",
+              "pm.collectionVariables.set('read_date', n.read_date);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Mark notification as read again",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{notification_id}}/read",
+        "description": "Repeating the call is safe and keeps the original read_date. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Original read date kept', () => pm.expect(pm.response.json().read_date).to.eql(pm.collectionVariables.get('read_date')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject auditor marking as read",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{notification_id}}/read",
+        "description": "Reject auditor marking as read (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{auditor_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst marking employee notification",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{notification_id}}/read",
+        "description": "Reject analyst marking employee notification (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search notifications by user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?user_id={{user_id}}",
+        "description": "Search notifications by user (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the user_id filter', () => pm.response.json().forEach(r => pm.expect(String(r.user_id)).to.eql(String(pm.environment.get('user_id')))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search notifications by type",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?notification_type=Incident%20Assignment",
+        "description": "Search notifications by type (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the notification_type filter', () => pm.response.json().forEach(r => pm.expect(String(r.notification_type)).to.eql(String('Incident Assignment'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search notifications by severity",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?severity=High",
+        "description": "Search notifications by severity (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the severity filter', () => pm.response.json().forEach(r => pm.expect(String(r.severity)).to.eql(String('High'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search notifications by status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?status=Unread",
+        "description": "Search notifications by status (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the status filter', () => pm.response.json().forEach(r => pm.expect(String(r.status)).to.eql(String('Unread'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search notifications with combined filters",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?user_id={{user_id}}&status=Read",
+        "description": "Search notifications with combined filters (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Read notification found', () => pm.expect(pm.response.json().map(n => n.id)).to.include(Number(pm.collectionVariables.get('notification_id'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Search notifications with no matches",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?user_id={{auditor_id}}",
+        "description": "Search notifications with no matches (Mohamed Kassem). Expected HTTP 200. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Empty results', () => pm.expect(pm.response.json()).to.eql([]));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Analyst searches own notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search",
+        "description": "Analyst searches are limited to the analyst's own notifications. Expected HTTP 200. Author: Mohamed Kassem.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Every record matches the user_id filter', () => pm.response.json().forEach(r => pm.expect(String(r.user_id)).to.eql(String(pm.environment.get('analyst_id')))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst searching another user",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?user_id={{user_id}}",
+        "description": "Reject analyst searching another user (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee searching notifications",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search",
+        "description": "Reject employee searching notifications (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject invalid notification search",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/search?status=Seen",
+        "description": "Reject invalid notification search (Mohamed Kassem). Expected HTTP 422. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject unauthenticated notification access",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/user/{{user_id}}",
+        "description": "Reject unauthenticated notification access (Mohamed Kassem). Expected HTTP 401. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "noauth"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject analyst deleting notification",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{system_notification_id}}",
+        "description": "Reject analyst deleting notification (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{analyst_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Reject employee deleting notification",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{system_notification_id}}",
+        "description": "Reject employee deleting notification (Mohamed Kassem). Expected HTTP 403. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{user_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403', () => pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Delete notification",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{system_notification_id}}",
+        "description": "Delete notification (Mohamed Kassem). Expected HTTP 204. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 204', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mohamed Kassem - Verify deleted notification",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{notifications_base}}/MohamedKassem/notifications/{{system_notification_id}}",
+        "description": "Verify deleted notification (Mohamed Kassem). Expected HTTP 404. See docs/users-logs-notifications.md for fields and errors.",
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{admin_token}}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.info.requestName === 'Mohamed Kassem - Create security alert for employee') {",
+          "  pm.collectionVariables.set('run_id', Math.random().toString(36).slice(2, 8));",
+          "  pm.collectionVariables.set('today', new Date().toISOString().slice(0, 10));",
+          "}"
+        ]
+      }
+    }
+  ]
+}

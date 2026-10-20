@@ -8,12 +8,13 @@ from shared.database import Database, schema
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("service", choices=["threats", "vulnerabilities", "reports"])
+    parser.add_argument("service", choices=["users", "notifications", "threats", "vulnerabilities", "reports"])
     args = parser.parse_args()
     settings = Settings.from_env()
     if not settings.audit_post_url or not settings.audit_service_token:
         parser.error("Set AUDIT_POST_URL and AUDIT_SERVICE_TOKEN first")
-    names = {"threats": "Threat Intelligence", "vulnerabilities": "Vulnerability Management", "reports": "Security Reports"}
+    names = {"users": "Users and Identity Management", "notifications": "Notification and Alert Management",
+             "threats": "Threat Intelligence", "vulnerabilities": "Vulnerability Management", "reports": "Security Reports"}
     db = Database(settings.data_dir / f"{args.service}.db")
     db.initialize(schema("audit_outbox.sql"))
     print(f"Delivered {AuditOutbox(db, settings, names[args.service]).flush()} event(s)")

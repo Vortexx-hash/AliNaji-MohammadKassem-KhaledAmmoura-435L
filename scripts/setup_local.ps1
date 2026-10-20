@@ -10,6 +10,11 @@ if (-not (Test-Path -LiteralPath '.env')) {
     $localKey = & .\.venv\Scripts\python.exe -c "import secrets; print(secrets.token_urlsafe(48))"
     "JWT_SECRET=$localKey" | Set-Content -LiteralPath '.env' -Encoding ASCII
 }
+if (-not (Select-String -LiteralPath '.env' -Pattern '^AUDIT_SERVICE_TOKEN=' -Quiet)) {
+    $serviceToken = & .\.venv\Scripts\python.exe -m scripts.service_token
+    if ($LASTEXITCODE -ne 0) { throw 'Service token generation failed' }
+    "AUDIT_SERVICE_TOKEN=$serviceToken" | Add-Content -LiteralPath '.env' -Encoding ASCII
+}
 foreach ($line in Get-Content -LiteralPath '.env') {
     if ($line -match '^([A-Z][A-Z0-9_]*)=(.*)$') {
         [Environment]::SetEnvironmentVariable($matches[1], $matches[2], 'Process')

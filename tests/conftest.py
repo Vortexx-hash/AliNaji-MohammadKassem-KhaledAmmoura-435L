@@ -57,3 +57,57 @@ def vulnerability_client(settings):
     app.state.upstream = UpstreamClient(httpx.MockTransport(external_asset))
     with TestClient(app) as client:
         yield client
+
+
+@pytest.fixture
+def users_client(settings, monkeypatch):
+    from services.users.app import create_app
+    monkeypatch.setattr("services.users.security.ROUNDS", 4)
+    with TestClient(create_app(settings)) as client:
+        yield client
+
+
+@pytest.fixture
+def new_user():
+    return {"full_name": "Lab Employee", "username": "lab_employee", "email": "employee@example.com",
+            "password": "Lab#Pass2026", "department": "Finance", "role": "Regular Employee/User"}
+
+
+@pytest.fixture
+def logs_client(settings):
+    from services.logs.app import create_app
+    with TestClient(create_app(settings)) as client:
+        yield client
+
+
+@pytest.fixture
+def notifications_client(settings):
+    from dataclasses import replace
+    import httpx
+    from services.notifications.app import create_app
+    from shared.upstream import UpstreamClient
+
+    app = create_app(replace(settings, sources={"users": "http://users.test/MohamedKassem/users"}))
+
+    def users_api(request):
+        assert request.headers.get("Authorization", "").startswith("Bearer ")
+        return httpx.Response(200, json=[{"id": 5, "username": "lab_employee"}, {"id": 6, "username": "lab_analyst"}])
+
+    app.state.upstream = UpstreamClient(httpx.MockTransport(users_api))
+    with TestClient(app) as client:
+        yield client
+
+
+@pytest.fixture
+def forward():
+    """Route an httpx call made by one service into another service's TestClient."""
+    import httpx
+
+    def to(client):
+        def handler(request):
+            response = client.request(request.method, request.url.path, params=request.url.params,
+                                      headers={k: v for k, v in request.headers.items() if k.lower() != "host"},
+                                      content=request.content)
+            return httpx.Response(response.status_code, content=response.content, headers=response.headers)
+        return httpx.MockTransport(handler)
+    return to
