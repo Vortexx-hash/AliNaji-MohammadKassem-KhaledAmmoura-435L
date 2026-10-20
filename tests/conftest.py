@@ -57,3 +57,17 @@ def vulnerability_client(settings):
     app.state.upstream = UpstreamClient(httpx.MockTransport(external_asset))
     with TestClient(app) as client:
         yield client
+
+
+@pytest.fixture
+def users_client(settings, monkeypatch):
+    from services.users.app import create_app
+    monkeypatch.setattr("services.users.security.ROUNDS", 4)
+    with TestClient(create_app(settings)) as client:
+        yield client
+
+
+@pytest.fixture
+def new_user():
+    return {"full_name": "Lab Employee", "username": "lab_employee", "email": "employee@example.com",
+            "password": "Lab#Pass2026", "department": "Finance", "role": "Regular Employee/User"}
